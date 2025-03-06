@@ -113,7 +113,7 @@ const DataTable: React.FC<{ data: any[], title?: string }> = ({ data, title }) =
 const countryStateData: Record<string, string[]> = {
   USA: ["California", "Texas", "New York", "Florida"],
   Canada: ["Ontario", "Quebec", "British Columbia"],
-  India: ["Maharashtra", "Karnataka", "Delhi", "Tamil Nadu"],
+  India: ["Mumbai", "Bengaluru", "Delhi", "Pune"],
 };
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message, onFilterApply }) => {
@@ -123,6 +123,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onFilterApply }) => 
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<string>("");
   const [selectedState, setSelectedState] = useState<string>("");
+  const [customColumn, setCustomColumn] = useState<string>("");
+  const [customColumnName, setCustomColumnName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCountryChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -191,9 +193,36 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onFilterApply }) => 
                     </>
                   )}
 
+                  {/* Custom Column Input */}
+                  <div className="mt-4 border-t pt-3">
+                    <h4 className="text-sm font-semibold mb-2">Add Custom Column (Optional)</h4>
+                    <div className="space-y-2">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">Column Name:</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Revenue, Team Size"
+                          className="w-full border rounded p-2 mt-1 text-sm"
+                          value={customColumnName}
+                          onChange={(e) => setCustomColumnName(e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600">What to show:</label>
+                        <input
+                          type="text"
+                          placeholder="e.g., annual revenue, number of employees"
+                          className="w-full border rounded p-2 mt-1 text-sm"
+                          value={customColumn}
+                          onChange={(e) => setCustomColumn(e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Apply Filter Button */}
                   <button
-                    className={`w-full mt-3 py-1.5 rounded text-sm ${isLoading
+                    className={`w-full mt-4 py-2 rounded text-sm ${isLoading
                       ? 'bg-gray-400 cursor-not-allowed'
                       : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                     }`}
@@ -202,13 +231,21 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onFilterApply }) => 
                       
                       setIsLoading(true);
                       try {
-                        const filterQuery = `Update the results for ${selectedState}, ${selectedCountry}`;
+                        let filterQuery = `Show me startups in ${selectedState}, ${selectedCountry}`;
+                        if (customColumnName && customColumn) {
+                          // Add custom column without resetting existing data
+                          filterQuery += `. Also include ${customColumn} as ${customColumnName} while preserving existing data`;
+                        }
                         await onFilterApply(filterQuery);
+                        setIsFilterOpen(false);
+                        // Only reset location filters
+                        setSelectedCountry('');
+                        setSelectedState('');
+                        // Don't reset custom column values to allow multiple additions
                       } catch (error) {
                         console.error('Error applying filters:', error);
                       } finally {
                         setIsLoading(false);
-                        setIsFilterOpen(false);
                       }
                     }}
                     disabled={isLoading || !selectedCountry || !selectedState}

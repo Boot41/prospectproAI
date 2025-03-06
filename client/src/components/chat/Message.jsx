@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import 'github-markdown-css';
 import './Message.css';
 import ResultTable from './ResultTable';
+import { Bot, User } from 'lucide-react';
 
 const Message = ({ message }) => {
   const { type, content, responseType, structuredData } = message;
@@ -55,7 +56,14 @@ const Message = ({ message }) => {
 
     if (responseType === 'structured' && structuredData) {
       console.log('=== Rendering Structured Data ===');
-      return <ResultTable data={structuredData} />;
+      return (
+        <div className="space-y-4">
+          {structuredData.summary && (
+            <div className="text-sm text-gray-600">{structuredData.summary}</div>
+          )}
+          <ResultTable data={structuredData} />
+        </div>
+      );
     }
 
     // Handle markdown or fallback to plain text with markdown parsing
